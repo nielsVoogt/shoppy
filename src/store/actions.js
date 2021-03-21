@@ -3,10 +3,10 @@ import * as types from "./mutation-types.js";
 const fb = require("@/firebaseConfig.js");
 
 const actions = {
-  fetchUserDataAction({ commit, dispatch }, uid) {
-    const userProfile = fb.usersCollection.doc(uid);
-    userProfile.get().then((doc) => {
-      commit(types.SET_USER_PROFILE, doc.data());
+  fetchUserDataAction({ commit }, uid) {
+    const userData = fb.usersCollection.doc(uid);
+    userData.get().then((doc) => {
+      commit(types.SET_USER_DATA, doc.data());
     });
   },
 

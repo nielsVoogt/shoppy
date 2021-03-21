@@ -2,14 +2,11 @@ const getters = {
   user(state) {
     return state.user;
   },
-  userProfile(state) {
-    return state.userProfile;
+  userData(state) {
+    return state.userData;
   },
   isUserAuth(state) {
     return !!state.user;
-  },
-  getError(state) {
-    return state.error;
   },
 };
 

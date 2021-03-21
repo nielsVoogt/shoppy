@@ -1,13 +1,10 @@
+import { store } from "@/store/index.js";
+
 const routes = [
   {
-    path: "/store/:slug",
+    path: "/:slug",
     name: "Customer",
     component: () => import("../views/Customer.vue"),
-    beforeEnter: (to, from, next) => {
-      console.log("to", to);
-      console.log("from", from);
-      console.log("next", next);
-    },
   },
   {
     path: "/auth",
@@ -38,18 +35,17 @@ const routes = [
   {
     path: "",
     component: () => import("../layouts/Main.vue"),
+    meta: { requiresAuth: true },
     children: [
       {
         path: "/reservations",
         name: "Reservations",
         component: () => import("../views/Reservations.vue"),
-        meta: { requiresAuth: true },
       },
       {
         path: "/settings",
         name: "Settings",
         component: () => import("../views/Settings.vue"),
-        meta: { requiresAuth: true },
       },
     ],
   },

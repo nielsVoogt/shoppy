@@ -1,12 +1,12 @@
 import {
   SET_INITIAL_STATE,
   SET_USER,
-  SET_USER_PROFILE,
+  SET_USER_DATA,
 } from "./mutation-types.js";
 
 const mutations = {
-  [SET_USER_PROFILE](state, payload) {
-    state.userProfile = payload;
+  [SET_USER_DATA](state, payload) {
+    state.userData = payload;
   },
 
   [SET_USER](state, payload) {

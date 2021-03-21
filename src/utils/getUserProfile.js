@@ -1,6 +1,6 @@
 import { db } from "@/firebaseConfig.js";
 
-export default function getUserProfile(uid, follower = false) {
+export default function getUserData(uid, follower = false) {
   return new Promise((resolve, reject) => {
     const userRef = db.collection("users").doc(uid);
     userRef.get().then((doc) => {
