@@ -14,7 +14,7 @@ import RegistrationForm from "@/components/auth/RegistrationForm";
 import ConfirmationEmailSent from "@/components/auth/ConfirmationEmailSent";
 
 export default {
-  name: "UserRegistration",
+  name: "Registration",
   components: {
     AuthPanel,
     RegistrationForm,

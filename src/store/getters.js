@@ -2,8 +2,8 @@ const getters = {
   user(state) {
     return state.user;
   },
-  userData(state) {
-    return state.userData;
+  shopData(state) {
+    return state.shopData;
   },
   isUserAuth(state) {
     return !!state.user;

@@ -20,5 +20,18 @@ export default {
   computed: {
     ...mapGetters(["user"]),
   },
+  created() {
+    const bookingsRef = db.collection(
+      `/shops/${this.$route.params.slug}/bookings/`
+    );
+
+    bookingsRef.get().then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+        if (doc.id > this.getTimeStamp() === true) {
+          console.log(doc.data());
+        }
+      });
+    });
+  },
 };
 </script>

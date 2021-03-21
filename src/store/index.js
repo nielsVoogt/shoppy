@@ -11,7 +11,7 @@ Vue.use(Vuex);
 const initialState = () => {
   return {
     user: null,
-    userData: null,
+    shopData: null,
   };
 };
 
@@ -19,7 +19,7 @@ const initialState = () => {
 fb.auth.onAuthStateChanged((user) => {
   if (user) {
     store.commit("SET_USER", user);
-    store.dispatch("fetchUserDataAction", user.uid);
+    store.dispatch("fetchShopAction", user.uid);
   } else {
     store.commit("SET_INITIAL_STATE", initialState());
   }

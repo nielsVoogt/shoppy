@@ -21,21 +21,9 @@ firebase.initializeApp(firebaseConfig);
 const fb = firebase;
 const db = firebase.firestore();
 const auth = firebase.auth();
-// const currentUser = auth.currentUser;
 
 // // firebase collections
-const shopNamesCollection = db.collection("shops");
-// const followerCollection = db.collection("followers");
-const usersCollection = db.collection("users");
-// const tipsCollection = db.collection("tips");
+const shopsCollection = db.collection("shops");
+const shopsSlugCollection = db.collection("slugs");
 
-export {
-  shopNamesCollection,
-  // followerCollection,
-  usersCollection,
-  // tipsCollection,
-  // currentUser,
-  auth,
-  fb,
-  db,
-};
+export { shopsSlugCollection, shopsCollection, auth, fb, db };

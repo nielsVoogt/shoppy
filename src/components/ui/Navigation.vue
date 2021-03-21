@@ -14,8 +14,8 @@
         </router-link>
       </nav>
 
-      <div class="navigation-user-details-name" v-if="userData">
-        {{ userData.shopName }}
+      <div class="navigation-user-details-name" v-if="shopData">
+        {{ shopData.shopName }}
       </div>
 
       <button class="navigation-link" type="button" @click="logOut()">
@@ -38,7 +38,7 @@ export default {
     SettingsIcon,
   },
   computed: {
-    ...mapGetters(["isUserAuth", "userData"]),
+    ...mapGetters(["isUserAuth", "shopData"]),
   },
   methods: {
     ...mapActions(["logOutAction"]),

@@ -1,12 +1,12 @@
 import {
   SET_INITIAL_STATE,
+  SET_SHOP_DATA,
   SET_USER,
-  SET_USER_DATA,
 } from "./mutation-types.js";
 
 const mutations = {
-  [SET_USER_DATA](state, payload) {
-    state.userData = payload;
+  [SET_SHOP_DATA](state, payload) {
+    state.shopData = payload;
   },
 
   [SET_USER](state, payload) {

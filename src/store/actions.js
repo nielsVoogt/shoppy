@@ -3,10 +3,10 @@ import * as types from "./mutation-types.js";
 const fb = require("@/firebaseConfig.js");
 
 const actions = {
-  fetchUserDataAction({ commit }, uid) {
-    const userData = fb.usersCollection.doc(uid);
-    userData.get().then((doc) => {
-      commit(types.SET_USER_DATA, doc.data());
+  fetchShopAction({ commit }, uid) {
+    const shopData = fb.shopsCollection.doc(uid);
+    shopData.get().then((doc) => {
+      commit(types.SET_SHOP_DATA, doc.data());
     });
   },
 
@@ -32,7 +32,7 @@ const actions = {
           if (!response.user.emailVerified) {
             reject();
           } else {
-            dispatch("fetchUserDataAction", response.user.uid);
+            dispatch("fetchShopAction", response.user.uid);
             commit(types.SET_USER, response.user);
             resolve(response);
           }

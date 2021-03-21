@@ -1,8 +1,6 @@
-import { store } from "@/store/index.js";
-
 const routes = [
   {
-    path: "/:slug",
+    path: "/boek/:slug",
     name: "Customer",
     component: () => import("../views/Customer.vue"),
   },

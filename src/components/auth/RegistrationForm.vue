@@ -53,7 +53,7 @@ import { required, email, minLength } from "vuelidate/lib/validators";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { mapActions } from "vuex";
-import createUserCollections from "../../utils/createUserCollections.js";
+import shopSetup from "../../utils/shopSetup.js";
 import Spinner from "@/components/ui/Spinner";
 
 const fb = require("@/firebaseConfig.js");
@@ -67,10 +67,10 @@ export default {
   },
   data() {
     return {
+      slug: "",
       shopName: "",
       email: "",
       password: "",
-      // shopNameExists: false,
       accountSetup: false,
       formError: false,
       fieldErrors: {
@@ -93,14 +93,18 @@ export default {
       minLength: minLength(6),
     },
   },
+  watch: {
+    shopName: function() {
+      this.slug = this.shopName.replace(/[^A-Z0-9]/gi, "");
+    },
+  },
   methods: {
     ...mapActions(["logOutAction"]),
 
     async validateShopName() {
       if (this.shopName !== "") {
-        const newShopName = this.shopName.replace(/[^A-Z0-9]/gi, "");
-        const isShopNameAlreadyInDatabase = await fb.shopNamesCollection
-          .doc(newShopName)
+        const isShopNameAlreadyInDatabase = await fb.shopsSlugCollection
+          .doc(this.slug)
           .get();
         if (isShopNameAlreadyInDatabase.exists) {
           this.fieldErrors.shopName =
@@ -142,10 +146,7 @@ export default {
       fb.auth
         .createUserWithEmailAndPassword(this.email, this.password)
         .then((response) => {
-          createUserCollections(
-            response.user.uid,
-            this.shopName.toLowerCase()
-          ).then(() => {
+          shopSetup(response.user.uid, this.shopName, this.slug).then(() => {
             // Unfortunatly Firebase does a automatic login after creation.
             // We block this behaviour by immediatly logging the user out after creation
             this.logOutAction();
