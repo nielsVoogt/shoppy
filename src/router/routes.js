@@ -26,6 +26,18 @@ const routes = [
     ],
   },
   {
+    path: "/setup",
+    component: () => import("../layouts/Setup.vue"),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: "",
+        name: "Account setup",
+        component: () => import("../views/Setup.vue"),
+      },
+    ],
+  },
+  {
     path: "/",
     name: "LandingPage",
     component: () => import("../views/LandingPage.vue"),

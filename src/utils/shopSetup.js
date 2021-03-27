@@ -1,7 +1,7 @@
 const fb = require("@/firebaseConfig.js");
 
 export default function shopSetup(uid, name, slug) {
-  return new Promise((resolve, _reject) => {
+  return new Promise((resolve, _) => {
     const shop = {
       name: name,
       formMessage: `Lorem ipsum dolor sit amet, ${name} adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco`,

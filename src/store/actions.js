@@ -19,7 +19,7 @@ const actions = {
           resolve();
         })
         .catch((error) => {
-          reject();
+          reject(error);
         });
     });
   },

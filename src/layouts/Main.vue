@@ -1,8 +1,10 @@
 <template>
-  <div class="main">
+  <div>
     <Notifications />
     <Navigation />
-    <router-view />
+    <main>
+      <router-view />
+    </main>
   </div>
 </template>
 
@@ -11,10 +13,17 @@ import Navigation from "@/components/ui/Navigation";
 import Notifications from "@/components/ui/Notifications";
 
 export default {
-  name: "Main",
+  name: "MainLayout",
   components: {
     Navigation,
     Notifications,
   },
 };
 </script>
+
+<style lang="scss">
+main {
+  max-width: 750px;
+  margin: 0 auto;
+}
+</style>

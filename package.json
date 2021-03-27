@@ -10,10 +10,11 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "vue": "^2.6.11",
     "firebase": "^7.24.0",
     "firebase-admin": "^9.3.0",
     "firebase-functions": "^3.11.0",
+    "moment": "^2.29.1",
+    "vue": "^2.6.11",
     "vue-feather-icons": "^5.1.0",
     "vue-router": "^3.1.6",
     "vuelidate": "^0.7.5",

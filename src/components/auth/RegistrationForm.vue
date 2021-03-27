@@ -9,16 +9,6 @@
     <form @submit.prevent="validate()">
       <fieldset>
         <Input
-          type="text"
-          label="Username"
-          placeholder="e.g. nielsthedev"
-          v-model="shopName"
-          v-on:blur="validateShopName()"
-          :error="fieldErrors.shopName"
-          @change="fieldErrors.shopName = ''"
-        />
-
-        <Input
           type="email"
           label="Email"
           placeholder="e.g. niels@company.nl"
@@ -52,8 +42,6 @@
 import { required, email, minLength } from "vuelidate/lib/validators";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import { mapActions } from "vuex";
-import shopSetup from "../../utils/shopSetup.js";
 import Spinner from "@/components/ui/Spinner";
 
 const fb = require("@/firebaseConfig.js");
@@ -67,8 +55,6 @@ export default {
   },
   data() {
     return {
-      slug: "",
-      shopName: "",
       email: "",
       password: "",
       accountSetup: false,
@@ -81,9 +67,6 @@ export default {
     };
   },
   validations: {
-    shopName: {
-      required,
-    },
     email: {
       required,
       email,
@@ -93,26 +76,7 @@ export default {
       minLength: minLength(6),
     },
   },
-  watch: {
-    shopName: function() {
-      this.slug = this.shopName.replace(/[^A-Z0-9]/gi, "");
-    },
-  },
   methods: {
-    ...mapActions(["logOutAction"]),
-
-    async validateShopName() {
-      if (this.shopName !== "") {
-        const isShopNameAlreadyInDatabase = await fb.shopsSlugCollection
-          .doc(this.slug)
-          .get();
-        if (isShopNameAlreadyInDatabase.exists) {
-          this.fieldErrors.shopName =
-            "This shop name already exists. Append your shopname with the location and/or location number";
-        }
-      }
-    },
-
     validatePassword() {
       if (!this.$v.password.minLength) {
         this.fieldErrors.password =
@@ -143,22 +107,22 @@ export default {
 
     signUp() {
       this.accountSetup = true;
+
       fb.auth
         .createUserWithEmailAndPassword(this.email, this.password)
         .then((response) => {
-          shopSetup(response.user.uid, this.shopName, this.slug).then(() => {
-            // Unfortunatly Firebase does a automatic login after creation.
-            // We block this behaviour by immediatly logging the user out after creation
-            this.logOutAction();
-            response.user
+          const { user } = response;
+
+          if (user != null) {
+            user
               .sendEmailVerification({
-                url: `${process.env.VUE_APP_URL}/login`,
+                url: `${process.env.VUE_APP_URL}/setup`,
                 handleCodeInApp: false,
               })
               .then(() => {
                 this.$emit("confirmation-email-sent");
               });
-          });
+          }
         })
         .catch((error) => {
           if (error.code === "auth/email-already-in-use") {

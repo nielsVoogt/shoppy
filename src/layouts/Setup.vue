@@ -1,19 +1,19 @@
 <template>
-  <div class="auth-view">
+  <div class="setup-view">
     <router-view />
   </div>
 </template>
 
 <script>
 export default {
-  name: "AuthLayout",
+  name: "SetupLayout",
 };
 </script>
 
 <style lang="scss">
-.auth-view {
+.setup-view {
   height: 100%;
-  background: #ededed;
+  background: orange;
   overflow: auto;
 }
 </style>
