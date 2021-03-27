@@ -45,7 +45,7 @@
     <h2>Your openinghours:</h2>
     <OpeningHours :opening-hours="openingHours" />
 
-    <button @click="validate()">Set up my shop</button>
+    <button @click="saveSetup()">Set up my shop</button>
   </div>
 </template>
 
@@ -110,9 +110,28 @@ export default {
     },
   },
   methods: {
-    validate() {
+    saveSetup() {
+      if (this.validateFields()) {
+        console.log("alles prima");
+      }
+    },
+
+    async validateShopName() {
+      if (this.shopName !== "") {
+        const isShopNameAlreadyInDatabase = await fb.shopsSlugCollection
+          .doc(this.slug)
+          .get();
+
+        console.log(isShopNameAlreadyInDatabase);
+        if (isShopNameAlreadyInDatabase.exists) {
+          this.fieldErrors.shopName =
+            "This shop name already exists. Append your shopname with the location and/or location number";
+        }
+      }
+    },
+
+    validateFields() {
       if (this.$v.$invalid) {
-        const e = this.fieldErrors;
         if (!this.$v.shopName.required)
           this.fieldErrors.shopName = "shopName can't be empty";
 
@@ -130,21 +149,7 @@ export default {
         if (!this.$v.slotSize.required)
           this.fieldErrors.slotSize = "Please select a slotsize";
       } else {
-        console.log("all good");
-      }
-    },
-
-    async validateShopName() {
-      if (this.shopName !== "") {
-        const isShopNameAlreadyInDatabase = await fb.shopsSlugCollection
-          .doc(this.slug)
-          .get();
-
-        console.log(isShopNameAlreadyInDatabase);
-        if (isShopNameAlreadyInDatabase.exists) {
-          this.fieldErrors.shopName =
-            "This shop name already exists. Append your shopname with the location and/or location number";
-        }
+        return true;
       }
     },
   },
