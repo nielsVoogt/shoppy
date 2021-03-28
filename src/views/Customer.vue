@@ -1,71 +1,93 @@
 <template>
   <div>
-    CUSTOMER
-    <div>{{ dates }}</div>
-    <div>{{ bookings }}</div>
+    <select v-if="dates.length" v-model="selectedDate">
+      <option value="">Selecteer een datum</option>
+      <option v-for="(date, index) in dates" :key="index" :value="date.date">
+        {{ date.date | formatDay }}
+      </option>
+    </select>
+    <select v-if="slots" v-model="selectedSlot">
+      <option value="">Selecteer een tijd</option>
+      <option
+        v-for="(visitors, slot, index) in slots"
+        :key="index"
+        :disabled="visitors >= shopData.maxCustomers"
+        :value="slot"
+      >
+        {{ formatTime(slot) }}
+      </option>
+    </select>
   </div>
 </template>
 
 <script>
 import { db } from "@/firebaseConfig.js";
+import moment from "moment";
+import { mapGetters } from "vuex";
 
 export default {
   name: "Customer",
   data() {
     return {
       dates: [],
-      bookings: [],
+      selectedDate: "",
+      slots: false,
+      selectedSlot: "",
+      day: false,
     };
   },
-  methods: {
-    getTimeStamp() {
-      var today = new Date();
-      var date = `${today.getFullYear()}-${today.getMonth() +
-        1}-${today.getDate()}`;
-      const currentTimeStamp = parseInt(
-        (new Date(date).getTime() / 1000).toFixed(0)
-      );
+  computed: {
+    ...mapGetters(["shopData"]),
+  },
+  watch: {
+    selectedDate: function(selectedDate) {
+      const index = this.dates.findIndex((date) => date.date === selectedDate);
+      const dayOfWeek = moment.unix(selectedDate).isoWeekday() - 1;
 
-      return currentTimeStamp;
+      this.selectedSlot = "";
+      this.slots = this.dates[index].slots;
+      this.day = this.shopData.openingHours[dayOfWeek];
     },
   },
+  methods: {
+    formatTime: function(slotIndex) {
+      const increase = slotIndex * this.shopData.slotDuration;
+      const start = moment(this.day.start, "H:mm")
+        .add(increase, "minutes")
+        .format("H:mm");
 
-  created() {
-    const bookingsRef = db.collection(
-      `/shops/${this.$route.params.slug}/bookings/`
-    );
+      return start;
+    },
+    async getDates(uid) {
+      const snapshot = await db
+        .collection("shops")
+        .doc(uid)
+        .collection("dates")
+        .get();
 
-    bookingsRef.get().then((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        if (doc.id > this.getTimeStamp() === true) {
-          console.log(doc.data());
-        }
-      });
-    });
-
-    // DATES AND SLOTS
-    const datesRef = db.collection(`/shops/${this.$route.params.slug}/dates/`);
-    datesRef.get().then((querySnapshot) => {
-      let dates = [];
-      querySnapshot.forEach((doc) => {
-        if (doc.id > this.getTimeStamp() === true) {
-          const { slots, name } = doc.data();
-
-          const availableSlots = slots.reduce(function(result, slot) {
-            if (slot.count < 4) {
-              result.push(slot);
-            }
-            return result;
-          }, []);
-
-          dates.push({
+      snapshot.docs.map((doc) => {
+        if (Object.keys(doc.data()).length !== 0) {
+          this.dates.push({
             date: doc.id,
-            availableSlots,
-            name,
+            slots: doc.data(),
           });
         }
       });
-      this.dates = dates;
+    },
+  },
+  filters: {
+    formatDay: function(timeStamp) {
+      return moment.unix(timeStamp).format("dd DD-MM");
+    },
+  },
+  created() {
+    const slugRef = db.collection("slugs").doc(this.$route.params.slug);
+    slugRef.get().then((doc) => {
+      if (doc.exists) {
+        this.getDates(doc.data().uid);
+      } else {
+        console.log("error");
+      }
     });
   },
 };

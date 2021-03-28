@@ -120,12 +120,10 @@ export default {
 
     login() {
       this.logInAction({ email: this.email, password: this.password })
-        .then((response) => {
-          console.log("loggedInResponse", response);
+        .then(() => {
           this.$router.push({ name: "Reservations" });
         })
         .catch((error) => {
-          console.log(error);
           // If there's a error we know this a resonse from firebase,
           // if not we are throwing the error itself, in this case
           // meaning the user has a unverified emailAdress.

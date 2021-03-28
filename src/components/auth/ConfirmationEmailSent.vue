@@ -1,19 +1,13 @@
 <template>
   <div>
     <div>📬</div>
-    We've sent you a email to confirm your account.
-    <Button size="lg" full-width @click="$router.push({ name: 'Login' })">
-      Back to login
-    </Button>
+    We've sent you a email to confirm your account. When you click this link you
+    verified your email and can start setting up your shops schedule.
   </div>
 </template>
 
 <script>
-import Button from "@/components/ui/Button";
 export default {
   name: "ConfirmationEmailSent",
-  components: {
-    Button,
-  },
 };
 </script>

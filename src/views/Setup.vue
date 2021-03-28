@@ -33,11 +33,11 @@
 
     <Input
       type="select"
-      label="Tijdsvak lengte (in minuten)"
-      v-model="slotSize"
-      :error="fieldErrors.slotSize"
-      @update="fieldErrors.slotSize = ''"
-      selectMessage="Selecteer het aantal bezoekers"
+      label="Tijdsvak lengte"
+      v-model="slotDuration"
+      :error="fieldErrors.slotDuration"
+      @update="fieldErrors.slotDuration = ''"
+      selectMessage="Tijd van afspraak in minuten"
       :selectOptions="[15, 30, 45, 60]"
     />
 
@@ -54,6 +54,8 @@ import Input from "@/components/ui/Input";
 import OpeningHours from "@/components/settings/OpeningHours";
 import { required, minLength } from "vuelidate/lib/validators";
 const fb = require("@/firebaseConfig.js");
+import { mapGetters } from "vuex";
+import moment from "moment";
 
 export default {
   name: "Setup",
@@ -67,24 +69,26 @@ export default {
       slug: "",
       formMessage: "",
       maxCustomers: null,
-      slotSize: null,
+      slotDuration: null,
       openingHours: [
-        { start: "", end: "", open: true },
-        { start: "", end: "", open: true },
-        { start: "", end: "", open: true },
-        { start: "", end: "", open: true },
-        { start: "", end: "", open: true },
-        { start: "", end: "", open: true },
+        { start: "9:00", end: "17:00", open: true },
+        { start: "9:00", end: "17:00", open: true },
+        { start: "9:00", end: "17:00", open: true },
+        { start: "9:00", end: "17:00", open: true },
+        { start: "9:00", end: "21:00", open: true },
+        { start: "9:00", end: "17:00", open: true },
+        { start: "9:00", end: "17:00", open: false },
       ],
       fieldErrors: {
         shopName: "",
         maxCustomers: "",
-        slotSize: "",
+        slotDuration: "",
         formMessage: "",
       },
     };
   },
   computed: {
+    ...mapGetters(["user"]),
     maxCustomersOptions: function() {
       return Array.from({ length: 60 }, (_, i) => i + 1);
     },
@@ -96,7 +100,7 @@ export default {
     maxCustomers: {
       required,
     },
-    slotSize: {
+    slotDuration: {
       required,
     },
     formMessage: {
@@ -110,9 +114,41 @@ export default {
     },
   },
   methods: {
-    saveSetup() {
+    async addSlots() {
+      this.openingHours.forEach((day, index) => {
+        if (day.open) {
+          let startTime = moment(day.start, "H:mm");
+          let endTime = moment(day.end, "H:mm");
+          var duration = moment.duration(endTime.diff(startTime)).asMinutes();
+          var slotAmount = duration / parseInt(this.slotDuration);
+          this.openingHours[index].slots = slotAmount;
+        } else {
+          this.openingHours[index].slots = 0;
+        }
+      });
+    },
+
+    async saveSetup() {
       if (this.validateFields()) {
-        console.log("alles prima");
+        await this.addSlots();
+
+        const shop = {
+          slug: this.slug,
+          shopName: this.shopName,
+          formMessage: this.formMessage,
+          maxCustomers: parseInt(this.maxCustomers),
+          slotDuration: parseInt(this.slotDuration),
+          openingHours: this.openingHours,
+        };
+
+        const uid = this.user.uid;
+        await fb.shopsSlugCollection.doc(this.slug).set({ uid });
+        await fb.shopsCollection.doc(uid).set(shop);
+
+        this.$router.push({
+          name: "Reservations",
+          params: { setupComplete: true },
+        });
       }
     },
 
@@ -146,8 +182,8 @@ export default {
         if (!this.$v.maxCustomers.required)
           this.fieldErrors.maxCustomers = "Please select a maximum of visitors";
 
-        if (!this.$v.slotSize.required)
-          this.fieldErrors.slotSize = "Please select a slotsize";
+        if (!this.$v.slotDuration.required)
+          this.fieldErrors.slotDuration = "Please select a slotDuration";
       } else {
         return true;
       }
