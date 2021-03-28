@@ -9,26 +9,25 @@
       </p>
       <form @submit.prevent="validate()" novalidate>
         <small v-if="error">{{ error }}</small>
-        <fieldset>
-          <Input
-            type="email"
-            label="Email"
-            placeholder="e.g. niels@company.nl"
-            v-model="email"
-            :error="fieldErrors.email"
-            @blur="validateEmailAdress()"
-            @change="fieldErrors.email = ''"
-          />
 
-          <Input
-            type="password"
-            label="Password"
-            placeholder="Your password"
-            v-model="password"
-            :error="fieldErrors.password"
-            @change="fieldErrors.password = ''"
-          />
-        </fieldset>
+        <Input
+          type="email"
+          label="Email"
+          placeholder="e.g. niels@company.nl"
+          v-model="email"
+          :error="fieldErrors.email"
+          @blur="validateEmailAdress()"
+          @change="fieldErrors.email = ''"
+        />
+
+        <Input
+          type="password"
+          label="Password"
+          placeholder="Your password"
+          v-model="password"
+          :error="fieldErrors.password"
+          @change="fieldErrors.password = ''"
+        />
 
         <Button type="submit" size="lg" full-width>
           Login

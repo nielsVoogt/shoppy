@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="shopData">
     <select v-if="dates.length" v-model="selectedDate">
       <option value="">Selecteer een datum</option>
       <option v-for="(date, index) in dates" :key="index" :value="date.date">
@@ -15,6 +15,16 @@
         :value="slot"
       >
         {{ formatTime(slot) }}
+      </option>
+    </select>
+    <select v-model="selectedVisitorCount">
+      <option value="">Met hoeveel mensen komen jullie</option>
+      <option
+        v-for="(visitors, index) in shopData.maxCustomers"
+        :key="index"
+        :value="index"
+      >
+        {{ index + 1 }}
       </option>
     </select>
   </div>
@@ -34,9 +44,11 @@ export default {
       slots: false,
       selectedSlot: "",
       day: false,
+      selectedVisitorCount: "",
     };
   },
   computed: {
+    // We should retrieve this with a get()
     ...mapGetters(["shopData"]),
   },
   watch: {

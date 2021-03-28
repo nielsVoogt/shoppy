@@ -128,6 +128,43 @@ export default {
       });
     },
 
+    createDaySlotsObject(slotCount) {
+      let slots = {};
+      Array.from(Array(slotCount)).forEach((_, i) => {
+        slots[i] = 0;
+      });
+      return slots;
+    },
+
+    async addDates() {
+      const today = moment.utc(new Date()).startOf("day");
+      const correctedOpeneningHours = [{}, ...this.openingHours];
+
+      for (let i = 0; i < 10; i++) {
+        const day = moment(today).add(i, "d");
+        const timeStamp = moment(day).unix();
+        const dayNumber = moment(day).isoWeekday();
+
+        const docData = this.createDaySlotsObject(
+          correctedOpeneningHours[dayNumber].slots
+        );
+
+        const uid = this.user.uid;
+
+        fb.shopsCollection
+          .doc(uid)
+          .collection("dates")
+          .doc(timeStamp.toString())
+          .set(docData)
+          .then(() => {
+            console.log("Document successfully written!");
+          })
+          .catch((error) => {
+            console.error("Error writing document: ", error);
+          });
+      }
+    },
+
     async saveSetup() {
       if (this.validateFields()) {
         await this.addSlots();
@@ -142,8 +179,14 @@ export default {
         };
 
         const uid = this.user.uid;
+
+        // Add the shop slug
         await fb.shopsSlugCollection.doc(this.slug).set({ uid });
+
+        // Add the shop details
         await fb.shopsCollection.doc(uid).set(shop);
+
+        await this.addDates();
 
         this.$router.push({
           name: "Reservations",

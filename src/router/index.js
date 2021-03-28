@@ -1,8 +1,9 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { debug } from "firebase-functions/lib/logger";
 import routes from "@/router/routes";
 import { store } from "@/store/index.js";
+
+const fb = require("@/firebaseConfig.js");
 
 Vue.use(VueRouter);
 
@@ -13,8 +14,12 @@ const router = new VueRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  const isAuthenticated = store.getters.isUserAuth;
+
+  console.log("to", to);
+  console.log("from", from);
+
   if (to.matched.some((record) => record.meta.requiresAuth)) {
-    const isAuthenticated = store.getters.isUserAuth;
     if (!isAuthenticated) {
       next({ path: "/" });
     } else {
