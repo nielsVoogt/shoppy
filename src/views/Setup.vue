@@ -136,7 +136,34 @@ export default {
       return slots;
     },
 
-    async addDates() {
+    async addOldDates() {
+      const today = moment.utc(new Date()).startOf("day");
+
+      for (let i = 0; i < 10; i++) {
+        const day = moment(today).subtract(i, "d");
+        const timeStamp = moment(day).unix();
+
+        const docData = {
+          date: timeStamp,
+        };
+
+        const uid = this.user.uid;
+
+        fb.shopsCollection
+          .doc(uid)
+          .collection("dates")
+          .doc()
+          .set(docData)
+          .then(() => {
+            console.log("Document successfully written!");
+          })
+          .catch((error) => {
+            console.error("Error writing document: ", error);
+          });
+      }
+    },
+
+    async addNewDates() {
       const today = moment.utc(new Date()).startOf("day");
       const correctedOpeneningHours = [{}, ...this.openingHours];
 
@@ -149,12 +176,15 @@ export default {
           correctedOpeneningHours[dayNumber].slots
         );
 
+        // Add the date as timestamp
+        docData.date = timeStamp;
+
         const uid = this.user.uid;
 
         fb.shopsCollection
           .doc(uid)
           .collection("dates")
-          .doc(timeStamp.toString())
+          .doc()
           .set(docData)
           .then(() => {
             console.log("Document successfully written!");
@@ -186,7 +216,9 @@ export default {
         // Add the shop details
         await fb.shopsCollection.doc(uid).set(shop);
 
-        await this.addDates();
+        // Add empty old dates and filled new dates
+        await this.addOldDates();
+        await this.addNewDates();
 
         this.$router.push({
           name: "Reservations",

@@ -17,39 +17,63 @@
         {{ formatTime(slot) }}
       </option>
     </select>
-    <select v-model="selectedVisitorCount">
+    <select v-model="selectedVisitorCount" v-if="selectedSlot">
       <option value="">Met hoeveel mensen komen jullie</option>
       <option
         v-for="(visitors, index) in shopData.maxCustomers"
         :key="index"
-        :value="index"
+        :value="index + 1"
       >
         {{ index + 1 }}
       </option>
     </select>
+
+    <Input
+      type="email"
+      label="Email"
+      placeholder="e.g. niels@company.nl"
+      v-model="email"
+      :error="fieldErrors.email"
+      @blur="validateEmailAdress()"
+      @change="fieldErrors.email = ''"
+      v-if="selectedVisitorCount"
+    />
   </div>
 </template>
 
 <script>
 import { db } from "@/firebaseConfig.js";
 import moment from "moment";
-import { mapGetters } from "vuex";
+
+import Input from "@/components/ui/Input";
+import { required, email } from "vuelidate/lib/validators";
 
 export default {
   name: "Customer",
+  components: {
+    Input,
+  },
   data() {
     return {
+      email: "",
       dates: [],
       selectedDate: "",
-      slots: false,
       selectedSlot: "",
-      day: false,
       selectedVisitorCount: "",
+      slots: false,
+      day: false,
+      shopData: false,
+      uid: false,
+      fieldErrors: {
+        email: "",
+      },
     };
   },
-  computed: {
-    // We should retrieve this with a get()
-    ...mapGetters(["shopData"]),
+  validations: {
+    email: {
+      required,
+      email,
+    },
   },
   watch: {
     selectedDate: function(selectedDate) {
@@ -57,11 +81,21 @@ export default {
       const dayOfWeek = moment.unix(selectedDate).isoWeekday() - 1;
 
       this.selectedSlot = "";
+      this.selectedVisitorCount = "";
       this.slots = this.dates[index].slots;
+
+      console.log(this.slots, dayOfWeek);
       this.day = this.shopData.openingHours[dayOfWeek];
     },
   },
   methods: {
+    validateEmailAdress() {
+      const isEmailValid = this.$v.email.email;
+      this.fieldErrors.email = !isEmailValid
+        ? "This is not a valid email adress"
+        : "";
+    },
+
     formatTime: function(slotIndex) {
       const increase = slotIndex * this.shopData.slotDuration;
       const start = moment(this.day.start, "H:mm")
@@ -70,18 +104,37 @@ export default {
 
       return start;
     },
-    async getDates(uid) {
-      const snapshot = await db
+
+    async getShopData(uid) {
+      const shop = await db
         .collection("shops")
         .doc(uid)
+        .get();
+      this.shopData = shop.data();
+      this.uid = uid;
+      this.getDates();
+    },
+
+    async getDates() {
+      const today = moment
+        .utc(new Date())
+        .startOf("day")
+        .unix();
+
+      const snapshot = await db
+        .collection("shops")
+        .doc(this.uid)
         .collection("dates")
+        .where("date", ">=", today)
         .get();
 
       snapshot.docs.map((doc) => {
-        if (Object.keys(doc.data()).length !== 0) {
+        const slots = doc.data();
+        delete slots["date"];
+        if (Object.keys(slots).length !== 0) {
           this.dates.push({
-            date: doc.id,
-            slots: doc.data(),
+            date: doc.data().date,
+            slots,
           });
         }
       });
@@ -96,7 +149,7 @@ export default {
     const slugRef = db.collection("slugs").doc(this.$route.params.slug);
     slugRef.get().then((doc) => {
       if (doc.exists) {
-        this.getDates(doc.data().uid);
+        this.getShopData(doc.data().uid);
       } else {
         console.log("error");
       }
