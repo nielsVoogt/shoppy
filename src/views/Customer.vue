@@ -39,16 +39,21 @@
       v-if="selectedVisitorCount"
     />
 
-    <div @click="hello()">Hello?</div>
+    <!-- <div @click="updateSlotCount()">Hello?</div> -->
 
-    <Button size="lg" full-width :disabled="enableSubmit">
+    <Button
+      size="lg"
+      full-width
+      :disabled="enableSubmit"
+      @click="saveBooking()"
+    >
       Finish reservering
     </Button>
   </div>
 </template>
 
 <script>
-import { db } from "@/firebaseConfig.js";
+import { db, fb } from "@/firebaseConfig.js";
 import moment from "moment";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -124,10 +129,9 @@ export default {
       return start;
     },
 
-    async hello() {
+    async saveBooking() {
       const visitorDetails = {
         email: this.email,
-        selectedDate: this.selectedDate,
         selectedSlot: parseInt(this.selectedSlot),
         selectedVisitorCount: this.selectedVisitorCount,
       };
@@ -138,16 +142,35 @@ export default {
         .get();
 
       if (snapshot.docs.length) {
-        console.log(snapshot.docs[0].id, "1");
-        snapshot.docs.map((doc) => {
-          console.log(doc.data(), doc.id);
-        });
+        db.collection(`shops/${this.uid}/bookings/`)
+          .doc(snapshot.docs[0].id)
+          .update({
+            visitors: fb.firestore.FieldValue.arrayUnion(visitorDetails),
+          })
+          .then(this.updateSlotCount());
       } else {
-        db.collection(`shops/${this.uid}/bookings`).add({
-          date: this.selectedDate,
-          visitors: [visitorDetails],
-        });
+        // When visitor is saved update the visitor count in dates
+        db.collection(`shops/${this.uid}/bookings`)
+          .add({
+            date: this.selectedDate,
+            visitors: [visitorDetails],
+          })
+          .then(this.updateSlotCount());
       }
+    },
+
+    updateSlotCount() {
+      let result = this.dates.filter((obj) => {
+        return obj.date === this.selectedDate;
+      });
+
+      db.collection(`shops/${this.uid}/dates`)
+        .doc(result[0].id)
+        .update({
+          [this.selectedSlot]: fb.firestore.FieldValue.increment(
+            this.selectedVisitorCount
+          ),
+        });
     },
 
     async getShopData(uid) {
@@ -178,6 +201,7 @@ export default {
         delete slots["date"];
         if (Object.keys(slots).length !== 0) {
           this.dates.push({
+            id: doc.id,
             date: doc.data().date,
             slots,
           });
