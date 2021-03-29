@@ -38,13 +38,17 @@
       @change="fieldErrors.email = ''"
       v-if="selectedVisitorCount"
     />
+
+    <Button size="lg" full-width :disabled="enableSubmit">
+      Finish reservering
+    </Button>
   </div>
 </template>
 
 <script>
 import { db } from "@/firebaseConfig.js";
 import moment from "moment";
-
+import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { required, email } from "vuelidate/lib/validators";
 
@@ -52,11 +56,12 @@ export default {
   name: "Customer",
   components: {
     Input,
+    Button,
   },
   data() {
     return {
-      email: "",
       dates: [],
+      email: "",
       selectedDate: "",
       selectedSlot: "",
       selectedVisitorCount: "",
@@ -74,6 +79,9 @@ export default {
       required,
       email,
     },
+    selectedDate: { required },
+    selectedSlot: { required },
+    selectedVisitorCount: { required },
   },
   watch: {
     selectedDate: function(selectedDate) {
@@ -84,8 +92,13 @@ export default {
       this.selectedVisitorCount = "";
       this.slots = this.dates[index].slots;
 
-      console.log(this.slots, dayOfWeek);
       this.day = this.shopData.openingHours[dayOfWeek];
+    },
+  },
+  computed: {
+    enableSubmit: function() {
+      if (!this.$v.$invalid) return false;
+      return true;
     },
   },
   methods: {
