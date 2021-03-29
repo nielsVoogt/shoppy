@@ -39,6 +39,8 @@
       v-if="selectedVisitorCount"
     />
 
+    <div @click="hello()">Hello?</div>
+
     <Button size="lg" full-width :disabled="enableSubmit">
       Finish reservering
     </Button>
@@ -92,13 +94,17 @@ export default {
       this.selectedVisitorCount = "";
       this.slots = this.dates[index].slots;
 
+      // console.log(this.slots, dayOfWeek);
       this.day = this.shopData.openingHours[dayOfWeek];
     },
   },
   computed: {
     enableSubmit: function() {
-      if (!this.$v.$invalid) return false;
-      return true;
+      if (this.$v.$invalid !== false) {
+        return true;
+      } else {
+        return false;
+      }
     },
   },
   methods: {
@@ -116,6 +122,32 @@ export default {
         .format("H:mm");
 
       return start;
+    },
+
+    async hello() {
+      const visitorDetails = {
+        email: this.email,
+        selectedDate: this.selectedDate,
+        selectedSlot: parseInt(this.selectedSlot),
+        selectedVisitorCount: this.selectedVisitorCount,
+      };
+
+      const snapshot = await db
+        .collection(`shops/${this.uid}/bookings`)
+        .where("date", "==", this.selectedDate)
+        .get();
+
+      if (snapshot.docs.length) {
+        console.log(snapshot.docs[0].id, "1");
+        snapshot.docs.map((doc) => {
+          console.log(doc.data(), doc.id);
+        });
+      } else {
+        db.collection(`shops/${this.uid}/bookings`).add({
+          date: this.selectedDate,
+          visitors: [visitorDetails],
+        });
+      }
     },
 
     async getShopData(uid) {
